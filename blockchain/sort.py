@@ -1,8 +1,17 @@
 import json
+import strings as s
 import binascii
 import codecs
-
-new_tran = [
+from uuid import uuid4
+import strings as gc
+import collections
+'''
+arr = ['0'] * 10
+#str = "".join(['0'] * 10)
+print("".join(['0'] * gc.BLOCKCHAIN_DIFFICULTY))
+print(str(uuid4()).replace('-', ''))
+'''
+chain = [
         {
             "sender": "d4eer4r4rcd394edd974e",
             "recipient": "someo4r4r4r4r",
@@ -29,8 +38,31 @@ new_tran = [
         }
     ]
 
-hash = []
+blockchain = {
+    'chain': chain,
+    'length': len(chain)
+}
 
+with open(s.TEMP_FILE_NAME1, "w") as file:
+    file.write(json.dumps(blockchain, ensure_ascii=False))
+
+
+with open(s.TEMP_FILE_NAME1, "rb") as file:
+    binary_data = file.read()
+
+print(type(binary_data))
+print(binary_data)
+str = json.dumps(blockchain, ensure_ascii=False)
+print(type(str))
+byte_str = str.encode("utf-8")
+
+print(byte_str)
+print(binascii.hexlify(byte_str))
+
+print(binascii.hexlify(binary_data))
+
+
+'''
 for t in new_tran:
     hash.append(t['hash'])
 
@@ -40,6 +72,4 @@ hash2 = [t['hash'] for t in new_tran]
 print(hash2[0])
 print(binascii.unhexlify(hash2[0]))
 print(binascii.hexlify(binascii.unhexlify(hash2[0])))
-
-[{'index': 1, 'hash': 1, 'timestamp': 1514451154.1110387, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 0, 'node_identifier': '7821f6b5cf1f4648a09343a9e82dcee6'}, {'index': 2, 'hash': 'd702d20df0d81a4b3a67ce9b9ee7399902bf3ea1bf60cd41b4f40c67aa709ec8', 'timestamp': 1514451168.5384843, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 1, 'node_identifier': '7821f6b5cf1f4648a09343a9e82dcee6'}, {'index': 3, 'hash': 1, 'timestamp': 1514451423.426568, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 2, 'node_identifier': 'fb29b281c95549c39309876a81bbf7ea'}, {'index': 4, 'hash': 1, 'timestamp': 1514452162.412277, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 3, 'node_identifier': '2dcf0875c79c4b7ca7830d85d60315c6'}, {'index': 5, 'hash': '78b375d5156d1ff5aa8d61ac05c9289c26a19865d71e90e139ae676c2c735836', 'timestamp': 1514452169.472607, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 4, 'node_identifier': '2dcf0875c79c4b7ca7830d85d60315c6'}, {'index': 6, 'hash': '43cc732af46394f69c3f92d88e6bebabbb3e770fa8c1f95d5f9ed146dde93bb9', 'timestamp': 1514452177.3515751, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 5, 'node_identifier': '2dcf0875c79c4b7ca7830d85d60315c6'}, {'index': 7, 'hash': '4b4f8c2569d5cfcec3e197dfede7cfad276940fca1d96d97de8dfa9dd73fa882', 'timestamp': 1514452179.2199192, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 6, 'node_identifier': '2dcf0875c79c4b7ca7830d85d60315c6'}, {'index': 8, 'hash': 1, 'timestamp': 1514452909.7070127, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 7, 'node_identifier': '69f7aa2d573d4bc0b7481a00240cf7ad'}, {'index': 9, 'hash': '1d67a377290aeeacccbab76a2b5e033083d95f7213be7d2947d41eb336682df3', 'timestamp': 1514452913.2018304, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 8, 'node_identifier': '69f7aa2d573d4bc0b7481a00240cf7ad'}, {'index': 10, 'hash': 1, 'timestamp': 1514453637.829901, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 9, 'node_identifier': '390b22b5872c441393d78d703b8bf676'}, {'index': 11, 'hash': 1, 'timestamp': 1514453683.556139, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 10, 'node_identifier': '2ca50b5e3f964e7a975b05371d73d770'}, {'index': 12, 'hash': '4cf45e2dcbd0846a2eb7ccd62dbf4023fab108c39e34ac3085952f8a98b3afa2', 'timestamp': 1514453688.5989568, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 11, 'node_identifier': '2ca50b5e3f964e7a975b05371d73d770'}, {'index': 13, 'hash': 1, 'timestamp': 1514453860.4486942, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 12, 'node_identifier': '2604402adb494fe7b649646ec48ac5fd'}, {'index': 14, 'hash': '467791503b196f0483bf7076724aee5d77ffb4c845a2bddcc8867f8e7b06af38', 'timestamp': 1514453864.5802975, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 13, 'node_identifier': '2604402adb494fe7b649646ec48ac5fd'}, {'index': 15, 'hash': '8ddb8330fcaa46839b733096a8070af75ee57b0dce74755f3e4ecf4750898a51', 'timestamp': 1514453869.5087378, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 14, 'node_identifier': '2604402adb494fe7b649646ec48ac5fd'}, {'index': 16, 'hash': 1, 'timestamp': 1514454048.3676746, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 15, 'node_identifier': '55ecb4e2eff04545bfa8434e831d599f'}, {'index': 17, 'hash': 'f84c7c6a34d952684fadb616492db1fe3d4fa58b58d3346fb08870ac4263a575', 'timestamp': 1514454056.1527984, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 16, 'node_identifier': '55ecb4e2eff04545bfa8434e831d599f'}, {'index': 18, 'hash': '88208c03a3e1d28a7335cd4671721853824fc430571b4940b15ffb2e150ecd22', 'timestamp': 1514454058.053074, 'merkle_root': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028', 'transactions_number': 1, 'transactions': [{'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 17, 'node_identifier': '55ecb4e2eff04545bfa8434e831d599f'}, {'index': 19, 'hash': 1, 'timestamp': 1514454230.6491532, 'merkle_root': '', 'transactions_number': 0, 'transactions': [], 'proof': 100, 'previous_index': 18, 'node_identifier': '198c9400c6de40299b955f2914f4312a'}, {'index': 20, 'hash': 'fa1b62698ccedef0196fe18443fb3f684ff08680bd1216e42ea2b3c34d94b6d5', 'timestamp': 1514454238.7199395, 'merkle_root': b'4a8deb70cba7d3d196a9cfed44d9637cc8657233e69a9bcde4d26a113ad140d1', 'transactions_number': 2, 'transactions': [{'sender': 'd4eer4r4rcd394edd974e', 'recipient': 'someo4r4r4r4r', 'amount': 2510, 'hash': 'bd19b8404d28cedb8ded582d34eb8066b3a5f1c8300fa1bfff022fb6ba6936e5'}, {'sender': 'Newly Generated Coins', 'recipient': '8def1149f4744cc7969973e4b133d299', 'amount': 12.5, 'hash': '5bd530464bb5ee6d2603593297ddd8e4b10c49537380466858232ba524e6a028'}], 'proof': 60018, 'previous_index': 19, 'node_identifier': '198c9400c6de40299b955f2914f4312a'}]
-
+'''

@@ -1,58 +1,64 @@
-import hashlib
-import json
-from db import Database
+import crypto as cr
+import requests
+import strings as g
+import db
 from time import time
 from flask import Flask, jsonify, request
 from urllib.parse import urlparse
-import requests
-import global_constants as gc
-import binascii as ba
+
 
 class Blockchain(object):
-    def __init__(self):
 
+    def __init__(self):
         self.nodes = set()
-        self.database = Database()
-        self.chain = self.database.getChain()
+        self.chain = db.get_blockchain()
         self.current_transactions = []
 
         # Create the genesis block
-        self.new_block(proof=100, block_hash=1)
+        self.new_block(proof=100, previous_hash=1)
+
 
     def register_node(self, address):
-
         parsed_url = urlparse(address)
         self.nodes.add(parsed_url.netloc)
 
-    def new_block(self, proof, block_hash=None):
 
+    def new_block(self, proof, previous_hash=None):
         block = {
             'index': len(self.chain) + 1,
-            'hash': block_hash or self.hash(self.chain[-1]),
             'timestamp': time(),
-            'merkle_root': self.merkle_root([t['hash'] for t in self.current_transactions]),
+            'merkle_root': cr.merkle_root([t['hash'] for t in self.current_transactions]),
             'transactions_number': len(self.current_transactions),
             'transactions': self.current_transactions,
             'proof': proof,
             'previous_index': len(self.chain),
-            'node_identifier': gc.NODE_IDENTIFIER,
+            'previous_hash': previous_hash or cr.block_hash(self.chain[-1]),
+            'node_identifier': g.NODE_IDENTIFIER
         }
+
+        block_hash_calc = {}
+        for k in g.BLOCK_HASH_KEYS:
+            block_hash_calc[k] = block[k]
+
+
+
+        block['hash'] = cr.block_hash(block_hash_calc)
 
         # Reset the current list of transactions
         self.current_transactions = []
         self.chain.append(block)
-        print(self.chain)
-        #self.database.saveChain(self.chain)
+        print(g.NEW_BLOCK_CREATED_MSG + str(block['index']))
+        db.save_blockchain(self.chain)
 
         return block
 
-    def new_transaction(self, transaction):
 
+    def new_transaction(self, transaction):
         self.current_transactions.append({
             'sender': transaction['sender'],
             'recipient': transaction['recipient'],
             'amount': transaction['amount'],
-            'hash': self.hash(transaction)
+            'hash': cr.block_hash(transaction)
         })
 
         return self.last_block['index'] + 1
@@ -61,53 +67,13 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    @staticmethod
-    def hash(item):
-
-        # We must make sure that the Dictionary is Ordered, or we'll have inconsistent hashes
-        block_string = json.dumps(item, sort_keys=True).encode()
-        return hashlib.sha256(block_string).hexdigest()
-
     def proof_of_work(self, last_proof):
-
         proof = 0
-        while self.valid_proof(last_proof, proof) is False:
+        while cr.valid_proof(last_proof, proof) is False:
             proof += 1
 
         return proof
 
-    @staticmethod
-    def hash2(a, b):
-
-        a1 = ba.unhexlify(a)[::-1]
-        b1 = ba.unhexlify(b)[::-1]
-        h = hashlib.sha256(hashlib.sha256(a1 + b1).digest()).digest()
-        return ba.hexlify(h[::-1]).decode()
-
-    @staticmethod
-    def merkle_root(hash_list):
-
-        if len(hash_list) == 1:
-            return hash_list[0]
-        if len(hash_list) == 0:
-            return ''
-
-        new_hash_list = []
-
-        for i in range(0, len(hash_list) - 1, 2):
-            new_hash_list.append(Blockchain.hash2(hash_list[i], hash_list[i + 1]))
-
-        if len(hash_list) % 2 == 1:  # odd, hash last item twice
-            new_hash_list.append(Blockchain.hash2(hash_list[-1], hash_list[-1]))
-
-        return Blockchain.merkle_root(new_hash_list)
-
-    @staticmethod
-    def valid_proof(last_proof, proof):
-
-        guess = f'{last_proof * proof / (last_proof/(proof + 1))}'.encode()
-        guess_hash = hashlib.sha256(guess).hexdigest()
-        return guess_hash[:4] == "0000"
 
     def valid_chain(self, chain):
 
@@ -124,13 +90,14 @@ class Blockchain(object):
                 return False
 
             # Check that the Proof of Work is correct
-            if not self.valid_proof(last_block['proof'], block['proof']):
+            if not cr.valid_proof(last_block['proof'], block['proof']):
                 return False
 
             last_block = block
             current_index += 1
 
         return True
+
 
     def resolve_conflicts(self):
 
@@ -166,7 +133,7 @@ app = Flask(__name__)
 blockchain = Blockchain()
 
 
-@app.route('/mine', methods=['GET'])
+@app.route(g.MINE_ROUTE, methods=['GET'])
 def mine():
     # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
@@ -175,9 +142,9 @@ def mine():
 
     # We must receive a reward for finding the proof.
     new_transaction_object = {
-        'sender': gc.GENERATED_BLOCK,
-        'recipient': gc.MY_WALLET_IDENTIFIER,
-        'amount': gc.BLOCK_REWARD,
+        'sender': g.GENERATED_BLOCK,
+        'recipient': g.MY_WALLET_IDENTIFIER,
+        'amount': g.BLOCK_REWARD,
     }
 
     blockchain.new_transaction(new_transaction_object)
@@ -186,17 +153,17 @@ def mine():
     block = blockchain.new_block(proof)
 
     response = {
-        'message': "New Block Forged",
+        'message': g.NEW_BLOCK_FORGED_MSG,
         'index': block['index'],
         'hash': block['hash'],
         'transactions': block['transactions'],
         'proof': block['proof'],
     }
-    print("New block with index = " + block['index'].__str__() + " and number of transactions = " + len(block['transactions']).__str__() + " was created successfully.")
+
     return jsonify(response), 200
 
 
-@app.route('/transactions/new', methods=['POST'])
+@app.route(g.NEW_TRANSACTION_ROUTE, methods=['POST'])
 def new_transaction():
     values = request.get_json()
     # Check that the required fields are in the POST'ed data
@@ -209,9 +176,8 @@ def new_transaction():
     return jsonify(response), 201
 
 
-@app.route('/chain', methods=['GET'])
+@app.route(g.FULL_CHAIN_ROUTE, methods=['GET'])
 def full_chain():
-    print(blockchain.chain)
     response = {
         'chain': blockchain.chain,
         'length': len(blockchain.chain),
@@ -219,36 +185,36 @@ def full_chain():
     return jsonify(response), 200
 
 
-@app.route('/nodes/register', methods=['POST'])
+@app.route(g.NODE_REGISTER_ROUTE, methods=['POST'])
 def register_nodes():
     values = request.get_json()
 
     nodes = values.get('nodes')
     if nodes is None:
-        return "Error: Please supply a valid list of nodes", 400
+        return g.INVALID_NODES_LIST_ERR, 400
 
     for node in nodes:
         blockchain.register_node(node)
 
     response = {
-        'message': 'New nodes have been added',
+        'message': g.NEW_NODES_ADDED_MSG,
         'total_nodes': list(blockchain.nodes),
     }
     return jsonify(response), 201
 
 
-@app.route('/nodes/resolve', methods=['GET'])
+@app.route(g.RESOLVE_CONFLICTS_ROUTE, methods=['GET'])
 def consensus():
     replaced = blockchain.resolve_conflicts()
 
     if replaced:
         response = {
-            'message': 'Our chain was replaced',
+            'message': g.CHAIN_REPLACED_MSG,
             'new_chain': blockchain.chain
         }
     else:
         response = {
-            'message': 'Our chain is authoritative',
+            'message': g.CHAIN_NOT_REPLACED_MSG,
             'chain': blockchain.chain
         }
 
